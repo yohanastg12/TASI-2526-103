@@ -1,0 +1,125 @@
+
+No. 
+
+Year 
+
+Domain Task 
+
+Modality 
+
+Features 
+
+Defenisi 
+
+Bukti dalam Paper 
+
+1. 
+
+2025 
+
+Automated Writing Assessment 
+
+Text 
+
+Topic coherence 
+
+Keterkaitan logis antar bagian teks secara keseluruhan — seberapa konsisten dan terhubung topik yang dibahas dalam tulisan. 
+
+“Topic coherence (0.108) in semantic features emerges as the single most important feature, reflecting the central role of logical consistency in critical thinking.” 
+
+Argument density 
+
+Jumlah rata-rata unit argumentasi per 100 karakter teks — mengukur seberapa padat struktur argumen dalam tulisan. 
+
+“The argument density indicator shows that Grade 9 students include an average of 0.38 argumentative units per 100 characters” 
+
+Sentence complexity 
+
+Tingkat kerumitan struktur kalimat — semakin kompleks susunan kalimat, semakin dalam hubungan logis yang dikandungnya. 
+
+“The high importance of syntactic complexity (0.089) indicates the close connection between language expression ability and thinking depth, with complex syntactic structures often carrying more refined logical relationships” 
+
+Dependency depth 
+
+Kedalaman jalur ketergantungan (dependency path) antar kata atau komponen dalam struktur sintaksis kalimat. 
+
+“simsyntactic evaluates syntactic association strength based on dependency path length” 
+
+Causal connectives 
+
+Kata atau frasa penghubung yang menandai hubungan sebab-akibat antar komponen argumen, seperti "reduces", "impairs", "therefore". 
+
+“causal connectives (0.072) play a crucial role in identifying reasoning chains” 
+
+ 
+
+“Causal markers detected: 'reduces', 'impairs', 'Therefore', 'can improve” 
+
+Contrast markers 
+
+Penanda linguistik yang menunjukkan pertentangan atau sanggahan, digunakan untuk mengidentifikasi struktur rebuttal dalam tulisan argumentatif. 
+
+“Rebuttal (RB): 'however', 'although', 'on the contrary'” 
+
+Inference indicators 
+
+Penanda linguistik yang menunjukkan bahwa penulis sedang menarik kesimpulan atau inferensi dari informasi sebelumnya. 
+
+“Main Claim (MC): 'therefore', 'thus', 'in conclusion'" dan "Warrant (WR): 'this means', 'which implies', 'suggesting that” 
+
+Paragraph transitions 
+
+Frasa atau ungkapan yang menandai perpindahan antar paragraf dan menjaga alur logis antar bagian tulisan. 
+
+“Discourse often relies on implicit logical connections without explicit markers" dan "CNN excels at identifying argumentative connectives... such as transitional phrases ('therefore', 'however', 'firstly...secondly')” 
+
+Cohesion chains 
+
+Rangkaian elemen teks yang saling terhubung dan menjaga keutuhan wacana, diukur dari frekuensi dan konsistensi penggunaan penghubung logis. 
+
+“The language feature correlation matrix shows a correlation coefficient of 0.81 between argument density and connective usage frequency, confirming the crucial role of logical connectives in constructing argumentation networks.” 
+
+Reference resolution 
+
+Kemampuan mengidentifikasi rujukan kata ganti (pronoun) atau anafora dalam teks — menentukan apa yang dimaksud oleh kata seperti "this", "it", atau "its". 
+
+Reference disambiguation errors (24.3%) reflect the challenges posed by Chinese pronouns and zero anaphora phenomena, particularly when pronouns like 'this' or 'its' refer to complex propositional content. 
+
+Vocabulary diversity 
+
+Keragaman kosakata yang digunakan dalam tulisan, diukur melalui Type-Token Ratio (TTR) — rasio antara jumlah kata unik terhadap total kata. 
+
+“Grade 9 students achieved a vocabulary of 5218 unique words, representing a 35.6% increase from Grade 7... directly reflected in the type–token ratio (TTR) increasing from 0.42 to 0.53.” 
+
+Academic words 
+
+Frekuensi penggunaan kosakata akademik dalam tulisan — semakin tinggi penggunaannya, semakin matang kemampuan berpikir kritis siswa. 
+
+“academic vocabulary usage frequency shows a positive correlation with critical thinking maturity, providing actionable guidance for teaching practice.” 
+
+2. 
+
+2021 
+
+Data Extraction 
+
+Image 
+
+RGB features  
+
+Ruang warna RGB secara langsung menyimpan nilai intensitas merah, hijau, dan biru, yang seringkali sensitif terhadap variasi pencahayaan. 
+
+"The RGB color space directly stores red, green, and blue intensity values, which are often sensitive to illumination variations.” 
+
+ 
+
+Paper : Analysis of Color Space Transformation on MobileNetV2 Performance for Image Classification 
+
+HSV features 
+
+ruang warna yang memisahkan informasi warna dari intensitas cahaya. 
+
+“The HSV color space is fundamentally different from the widely known RGB color space since it separates out the Intensity (luminance) from the color information (chromaticity).” 
+ 
+paper : Segmentation and Histogram Generation using the HSV Color Space for Image Retrieval 
+
