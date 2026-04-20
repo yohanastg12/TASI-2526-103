@@ -1,0 +1,337 @@
+import re
+import colorsys
+from collections import deque
+from typing import Iterable, List, Sequence, Union, Optional
+
+import numpy as np
+
+try:
+    import cv2  # optional; used if available for RGB->HSV conversion
+except ImportError:
+    cv2 = None
+
+
+# =========================
+# Helpers
+# =========================
+
+_TOKEN_PATTERN = re.compile(r"\b\w+\b", re.UNICODE)
+
+_STOPWORDS = {
+    "the", "a", "an", "and", "or", "but", "if", "then", "than", "of", "to", "in", "on",
+    "for", "with", "at", "by", "from", "as", "is", "are", "was", "were", "be", "been",
+    "being", "this", "that", "these", "those", "it", "its", "they", "their", "them",
+    "he", "his", "she", "her", "we", "our", "you", "your", "i", "my"
+}
+
+
+def _safe_div(a: float, b: float) -> float:
+    return float(a / b) if b else 0.0
+
+
+def _to_tokens(tokens_or_text: Union[str, Sequence[str]]) -> List[str]:
+    if isinstance(tokens_or_text, str):
+        return [t.lower() for t in _TOKEN_PATTERN.findall(tokens_or_text)]
+    return [str(t).lower() for t in tokens_or_text]
+
+
+def _split_sentences(text: str) -> List[str]:
+    parts = re.split(r"[.!?;。\n]+", text)
+    return [p.strip() for p in parts if p.strip()]
+
+
+def _split_paragraphs(paragraphs: Union[str, Sequence[str]]) -> List[str]:
+    if isinstance(paragraphs, str):
+        parts = re.split(r"\n\s*\n", paragraphs.strip())
+        return [p.strip() for p in parts if p.strip()]
+    return [str(p).strip() for p in paragraphs if str(p).strip()]
+
+
+def _count_phrase_occurrences(text: str, phrases: Iterable[str]) -> int:
+    text_low = text.lower()
+    return sum(text_low.count(p.lower()) for p in phrases)
+
+
+def _prepare_image_rgb(image_rgb) -> np.ndarray:
+    arr = np.asarray(image_rgb, dtype=np.float32)
+    if arr.ndim != 3 or arr.shape[-1] != 3:
+        raise ValueError("image_rgb harus berbentuk (H, W, 3).")
+    if arr.max() > 1.0:
+        arr = arr / 255.0
+    return np.clip(arr, 0.0, 1.0)
+
+
+def _rgb_to_hsv_normalized(image_rgb) -> np.ndarray:
+    """
+    Return HSV normalized to [0,1] for all channels.
+    If OpenCV is available, use OpenCV-style conversion.
+    Otherwise fall back to colorsys.
+    """
+    rgb = _prepare_image_rgb(image_rgb)
+
+    if cv2 is not None:
+        rgb_u8 = (rgb * 255).astype(np.uint8)
+        hsv = cv2.cvtColor(rgb_u8, cv2.COLOR_RGB2HSV).astype(np.float32)
+        h = hsv[..., 0] / 179.0
+        s = hsv[..., 1] / 255.0
+        v = hsv[..., 2] / 255.0
+        return np.stack([h, s, v], axis=-1)
+
+    flat = rgb.reshape(-1, 3)
+    hsv_flat = np.array([colorsys.rgb_to_hsv(*px) for px in flat], dtype=np.float32)
+    return hsv_flat.reshape(rgb.shape)
+
+
+# =========================
+# 12 text features
+# =========================
+
+def topic_coherence_score(sentence_embeddings) -> float:
+    """
+    Mean adjacent cosine similarity, mapped to [0,1].
+    Input: array-like shape (n_sentences, emb_dim)
+    """
+    emb = np.asarray(sentence_embeddings, dtype=np.float32)
+    if emb.ndim != 2 or emb.shape[0] < 2:
+        return 0.0
+
+    norms = np.linalg.norm(emb, axis=1, keepdims=True)
+    norms[norms == 0] = 1.0
+    emb = emb / norms
+
+    sims = np.sum(emb[:-1] * emb[1:], axis=1)  # cosine similarities
+    sims = np.clip(sims, -1.0, 1.0)
+
+    # map [-1,1] -> [0,1]
+    return float(np.mean((sims + 1.0) / 2.0))
+
+
+def argument_density_score(argument_units: int, num_characters: int) -> float:
+    """
+    Argumentative units per 100 characters.
+    """
+    if argument_units < 0 or num_characters < 0:
+        raise ValueError("argument_units dan num_characters harus non-negatif.")
+    return 100.0 * _safe_div(argument_units, num_characters)
+
+
+def sentence_complexity_score(text: str) -> float:
+    """
+    Proxy complexity score based on:
+    - average sentence length
+    - subordinate/causal/contrast markers
+    - clause separators (, ; :)
+    """
+    sentences = _split_sentences(text)
+    if not sentences:
+        return 0.0
+
+    tokens_per_sentence = [len(_to_tokens(s)) for s in sentences]
+    avg_len = float(np.mean(tokens_per_sentence))
+
+    complexity_markers = [
+        "because", "since", "although", "however", "therefore", "which",
+        "that", "while", "if", "when", "whereas", "thus"
+    ]
+    marker_count = _count_phrase_occurrences(text, complexity_markers)
+    separator_count = len(re.findall(r"[,;:]", text))
+
+    marker_density = _safe_div(marker_count, len(sentences))
+    separator_density = _safe_div(separator_count, len(sentences))
+
+    return float(avg_len + 1.5 * marker_density + 0.5 * separator_density)
+
+
+def dependency_depth_score(dependency_paths: Sequence[Union[int, float]]) -> float:
+    """
+    Mean dependency path length / depth.
+    """
+    arr = np.asarray(list(dependency_paths), dtype=np.float32)
+    if arr.size == 0:
+        return 0.0
+    return float(np.mean(arr))
+
+
+def causal_connectives_score(text: str) -> float:
+    """
+    Frequency of causal markers per 100 tokens.
+    """
+    markers = [
+        "because", "since", "therefore", "thus", "hence", "as a result",
+        "reduces", "impairs", "can improve", "leads to", "causes"
+    ]
+    tokens = _to_tokens(text)
+    return 100.0 * _safe_div(_count_phrase_occurrences(text, markers), len(tokens))
+
+
+def contrast_markers_score(text: str) -> float:
+    """
+    Frequency of contrast/rebuttal markers per 100 tokens.
+    """
+    markers = ["however", "although", "on the contrary", "while", "but", "yet", "nevertheless"]
+    tokens = _to_tokens(text)
+    return 100.0 * _safe_div(_count_phrase_occurrences(text, markers), len(tokens))
+
+
+def inference_indicators_score(text: str) -> float:
+    """
+    Frequency of inference/conclusion markers per 100 tokens.
+    Based on Main Claim + Warrant markers mentioned in the paper.
+    """
+    markers = [
+        "therefore", "thus", "in conclusion",
+        "this means", "which implies", "suggesting that"
+    ]
+    tokens = _to_tokens(text)
+    return 100.0 * _safe_div(_count_phrase_occurrences(text, markers), len(tokens))
+
+
+def paragraph_transitions_score(paragraphs: Union[str, Sequence[str]]) -> float:
+    """
+    Ratio of paragraphs (except first) that begin with or strongly signal transitions.
+    """
+    paras = _split_paragraphs(paragraphs)
+    if len(paras) <= 1:
+        return 0.0
+
+    markers = [
+        "first", "firstly", "second", "secondly", "finally",
+        "however", "therefore", "in summary", "moreover", "furthermore"
+    ]
+
+    transition_hits = 0
+    for p in paras[1:]:
+        first_tokens = " ".join(_to_tokens(p)[:5])
+        if any(m in first_tokens for m in markers):
+            transition_hits += 1
+
+    return _safe_div(transition_hits, len(paras) - 1)
+
+
+def cohesion_chains_score(text: str) -> float:
+    """
+    Combined score:
+    - adjacent sentence lexical overlap
+    - logical connective density
+    Returns a value in [0,1] approximately.
+    """
+    sentences = _split_sentences(text)
+    if len(sentences) < 2:
+        return 0.0
+
+    logical_markers = [
+        "because", "since", "therefore", "thus", "however", "although",
+        "moreover", "furthermore", "in conclusion", "as a result"
+    ]
+    tokens_all = _to_tokens(text)
+
+    overlaps = []
+    for s1, s2 in zip(sentences[:-1], sentences[1:]):
+        t1 = {t for t in _to_tokens(s1) if t not in _STOPWORDS and len(t) > 2}
+        t2 = {t for t in _to_tokens(s2) if t not in _STOPWORDS and len(t) > 2}
+        union = t1 | t2
+        inter = t1 & t2
+        overlaps.append(_safe_div(len(inter), len(union)))
+
+    mean_overlap = float(np.mean(overlaps)) if overlaps else 0.0
+    connective_density = 100.0 * _safe_div(_count_phrase_occurrences(text, logical_markers), len(tokens_all))
+
+    # normalize connective density softly into [0,1]
+    connective_score = min(connective_density / 10.0, 1.0)
+
+    return float(0.7 * mean_overlap + 0.3 * connective_score)
+
+
+def reference_resolution_score(text: str) -> float:
+    """
+    Heuristic proxy:
+    ratio of pronouns that have some plausible antecedent content
+    in the preceding two sentences.
+    """
+    sentences = _split_sentences(text)
+    if not sentences:
+        return 0.0
+
+    pronouns = {"this", "it", "its", "they", "their", "them", "these", "those", "he", "she", "his", "her"}
+    total_refs = 0
+    resolved_refs = 0
+
+    context_window = deque(maxlen=2)
+
+    for sent in sentences:
+        tokens = _to_tokens(sent)
+        current_content = {t for t in tokens if t not in _STOPWORDS and t not in pronouns and len(t) > 2}
+
+        context_content = set().union(*context_window) if context_window else set()
+
+        for tok in tokens:
+            if tok in pronouns:
+                total_refs += 1
+                if context_content:
+                    resolved_refs += 1
+
+        context_window.append(current_content)
+
+    return _safe_div(resolved_refs, total_refs)
+
+
+def vocabulary_diversity_score(tokens_or_text: Union[str, Sequence[str]]) -> float:
+    """
+    Type-Token Ratio (TTR).
+    """
+    tokens = _to_tokens(tokens_or_text)
+    return _safe_div(len(set(tokens)), len(tokens))
+
+
+def academic_words_score(tokens_or_text: Union[str, Sequence[str]],
+                         academic_lexicon: Optional[set] = None) -> float:
+    """
+    Ratio of academic words in text.
+    """
+    if academic_lexicon is None:
+        academic_lexicon = {
+            "analysis", "argument", "evidence", "reasoning", "conclusion", "concept",
+            "principle", "hypothesis", "theory", "significant", "relevant", "logical",
+            "coherence", "inference", "assumption", "evaluate", "critical", "perspective"
+        }
+
+    tokens = _to_tokens(tokens_or_text)
+    academic_count = sum(1 for t in tokens if t in academic_lexicon)
+    return _safe_div(academic_count, len(tokens))
+
+
+# =========================
+# 2 image features
+# =========================
+
+def rgb_feature_score(image_rgb) -> float:
+    """
+    RGB baseline feature:
+    returns mean normalized RGB intensity in [0,1].
+    This follows the idea that RGB directly stores red, green, blue intensity values.
+    """
+    rgb = _prepare_image_rgb(image_rgb)
+    return float(np.mean(rgb))
+
+
+def hsv_feature_score(image_rgb) -> float:
+    """
+    HSV feature extraction inspired by the HSV paper:
+    - convert RGB -> HSV
+    - use saturation threshold to decide whether Hue or Intensity (Value)
+      is the dominant perceptual feature for each pixel
+    - return mean dominant-feature value in [0,1]
+
+    Threshold:
+        th_sat(V) = 1.0 - 0.8 * V
+    where V is normalized in [0,1].
+    """
+    hsv = _rgb_to_hsv_normalized(image_rgb)
+    h = hsv[..., 0]   # [0,1]
+    s = hsv[..., 1]   # [0,1]
+    v = hsv[..., 2]   # [0,1]
+
+    th_sat = 1.0 - 0.8 * v
+    dominant = np.where(s > th_sat, h, v)
+
+    return float(np.mean(dominant))

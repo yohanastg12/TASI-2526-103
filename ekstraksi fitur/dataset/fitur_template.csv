@@ -1,0 +1,5 @@
+feature_name,modality,source_columns,extractor_key,output_columns,params_json,enabled,fallback_value,paper_name,code_snippet,notes
+essay_char_count,text,Essay,essay_char_count,txt_essay_char_count,{},1,,AWE 2025,,Scalar feature
+essay_question_overlap,text,"Essay,Question",essay_question_overlap,txt_essay_question_overlap,{},1,,AWE 2025,,Jaccard overlap
+rgb_stats,image,graph,rgb_stats,"img_rgb_mean_r,img_rgb_mean_g,img_rgb_mean_b,img_rgb_std_r,img_rgb_std_g,img_rgb_std_b",{},1,,Color Space 2021,,Multi-output feature
+edge_density,image,graph,edge_density,img_edge_density,"{""edge_threshold"":0.08}",1,,General,,Needs threshold parameter

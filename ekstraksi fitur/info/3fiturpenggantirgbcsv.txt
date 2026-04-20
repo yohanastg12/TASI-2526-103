@@ -1,0 +1,1022 @@
+SEGMENTATION AND HISTOGRAM GENERATION USING THE HSV COLOR SPACE FOR
+IMAGE RETRIEVAL
+Shamik Sural, Gang Qian and Sakti Pramanik
+Dept. of Computer Science and Engineering,
+3115 Engineering Building, Michigan State University, East Lansing, MI 48824, USA.
+shamik@ieee.org, {qiangang, pramanik}@cse.msu.edu
+ABSTRACT
+We have analyzed the properties of the HSV (Hue,
+Saturation and Value) color space with emphasis on the
+visual perception of the variation in Hue, Saturation and
+Intensity values of an image pixel. We extract pixel
+features by either choosing the Hue or the Intensity as the
+dominant property based on the Saturation value of a
+pixel. The feature extraction method has been applied for
+both image segmentation as well as histogram generation
+applications – two distinct approaches to content based
+image retrieval (CBIR). Segmentation using this method
+shows better identification of objects in an image. The
+histogram retains a uniform color transition that enables
+us to do a window-based smoothing during retrieval. The
+results have been compared with those generated using the
+RGB color space.
+1. INTRODUCTION
+We have done in-depth analysis of the visual properties of
+the HSV color space and its usefulness in content based
+image retrieval applications. In particular, we have
+developed image segmentation and histogram generation
+applications using this color space – two important
+methods in CBIR [5,7].
+Segmentation is done to decompose an image into
+meaningful parts for further analysis, resulting in a higherlevel representation of the image pixels like the
+foreground objects and the background. In region-based
+CBIR applications, segmentation is essential for
+identifying objects present in a query image and each of
+the database images. Wang et al [12] have used the LUV
+values of a group of 4X4 pixels along with three features
+obtained by wavelet transform of the L component for
+determining regions of interest. Region-based retrieval has
+also been used in the NeTra system [4] and the Blobworld
+system [1]. We segment color images using features
+extracted from the HSV space as a step in the regionbased matching approach to CBIR. The HSV color space
+is fundamentally different from the widely known RGB
+color space since it separates out the Intensity (luminance)
+from the color information (chromaticity). Again, of the
+two chromaticity axes, a difference in Hue of a pixel is
+found to be visually more prominent compared to that of
+the Saturation. For each pixel we, therefore, choose either
+its Hue or the Intensity as the dominant feature based on
+its Saturation. We then segment the image by grouping
+pixels with similar features using the K-means clustering
+algorithm [3].
+A standard way of generating a color histogram of an
+image is to concatenate ‘N’ higher order bits for the Red,
+Green and Blue values in the RGB space [11]. The
+histogram then has 23N bins, which accumulate the count
+of pixels with similar color. It is also possible to generate
+three separate histograms, one for each channel, and
+concatenate them into one [2]. Smith and Chang [8] have
+used a color set approach to extract spatially localized
+color information. Ortega et al [6] have used the HS coordinates to form a two-dimensional histogram where
+each bin contains the percentage of pixels in the image
+that have corresponding H and S colors for that bin. We
+generate a one-dimensional histogram from the HSV
+space where a perceptually smooth transition of color is
+obtained in the feature vector. This enables us to use a
+window-based smoothing of histograms so that similar
+colors can be matched between a query and each of the
+database images.
+We explain the HSV-based feature extraction and
+image segmentation method in the next section and the
+histogram generation technique in section 3. We then
+present experimental results in section 4 and draw
+conclusions from our work in the last section of the paper.
+2. IMAGE SEGMENTATION USING FEATURES
+FROM THE HSV COLOR SPACE
+2.1. Analysis of the HSV Color Space
+A three dimensional representation of the HSV color
+space is a hexacone, where the central vertical axis
+represents the Intensity [9]. Hue is defined as an angle in
+the range [0,2S] relative to the Red axis with red at angle
+0, green at 2S/3, blue at 4S/3 and red again at 2S.
+Saturation is the depth or purity of the color and is
+measured as a radial distance from the central axis with
+value between 0 at the center to 1 at the outer surface. For
+S=0, as one moves higher along the Intensity axis, one
+goes from Black to White through various shades of gray.
+On the other hand, for a given Intensity and Hue, if the
+Saturation is changed from 0 to 1, the perceived color
+changes from a shade of gray to the most pure form of the
+0-7803-7622-6/02/$17.00 ©2002 IEEE IEEE ICIP 2002 II - 589
+color represented by its Hue. Looked from a different
+angle, any color in the HSV space can be transformed to a
+shade of gray by sufficiently lowering the Saturation. The
+value of Intensity determines the particular gray shade to
+which this transformation converges. When Saturation is
+near 0, all pixels, even with different Hues, look alike and
+as we increase the Saturation towards 1, they tend to get
+separated and are visually perceived as the true colors
+represented by their Hues as shown in figure 1. Thus, for
+low values of Saturation, a color can be approximated by a
+gray value specified by the Intensity level while for higher
+Saturation, the color can be approximated by its Hue. The
+Saturation threshold that determines this transition is once
+again dependent on the Intensity. For low intensities, even
+for a high Saturation, a color is close to the gray value and
+vice versa. Saturation gives an idea about the depth of
+color and human eye is less sensitive to its variation
+compared to variation in Hue or Intensity. We, therefore,
+use the Saturation value of a pixel to determine whether
+the Hue or the Intensity is more pertinent to human visual
+perception of the color of that pixel and ignore the actual
+value of the Saturation. It is observed that for higher
+values of intensity, a saturation of 0.2 differentiates
+between Hue and Intensity dominance. Assuming the
+maximum Intensity value to be 255, we use the following
+threshold function to determine if a pixel should be
+represented by its Hue or its Intensity as its dominant
+feature.
+thsat(V) = 
+255
+0.8V 1.0  (1)
+In the above equation, we see that for V=0, th(V) =
+1.0, meaning that all the colors are approximated as black
+whatever be the Hue or the Saturation. On the other hand,
+with increasing values of the Intensity, Saturation
+threshold that separates Hue dominance from Intensity
+dominance goes down.
+2.2. Feature Generation using the HSV Color Space
+We generate features by utilizing the above properties of
+the HSV color space for clustering pixels into segmented
+regions. Figure 2(a) shows an image and figure 2(b)
+shows the same image using the approximated pixels after
+Saturation thresholding. Pixels with sub-threshold
+Saturation have been represented by their gray values
+while the other pixels have been represented by their
+Hues. The feature generation used by us makes an
+approximation of the color of each pixel in the form of
+thresholding. On the other hand, features generated from
+the RGB color space approximate by considering a few
+higher order bits. In figures 2(c) - (d) we show the same
+image approximated with the six lower-order bits all set to
+0 and all set to 1, respectively. It is seen that the
+approximation done by the RGB features blurs the
+distinction between two visually separable colors by
+changing the brightness. On the other hand, the HSVbased approximation can determine the intensity and
+shade variations near the edges of an object, thereby
+sharpening the boundaries and retaining the color
+information of each pixel. This phenomenon is exhibited
+in detail in figure 3. Figure 3(a) shows a number of solid
+colors with varying intensities. Figure 3(b)-(c) shows the
+result of approximation using the RGB color space taking
+the 2 higher order bits. It is seen that some of the colors
+with high intensities cannot be recognized, as they are
+inseparable from the background. Also, we see that the
+background of white and gray are considered equivalent
+due to approximation. The HSV features used by us retain
+the identity of the colors even at these intensity levels as
+seen in figure 3(d). This makes the HSV-based features
+very useful in running segmentation algorithms like
+clustering on the approximated pixels.
+2.3. Pixel Grouping by K-means Clustering Algorithm
+The RGB value of a pixel is first transformed to the HSV
+value using a method suggested in [9]. The feature is next
+extracted from each image pixel. After extraction, the
+pixel features are clustered using the K-Means clustering
+algorithm to group them into regions of similar color.
+Since the Hue and the Intensity values belong to the same
+number space, the two sets of data are clustered separately
+so that the color and the gray value pixels are not
+considered in the same cluster. In the K-means clustering
+algorithm, we start with K=2 and adaptively increase the
+number of clusters till the improvement in error falls
+below a threshold or a maximum number of clusters is
+reached. We set the maximum number of clusters to 12
+and an error improvement threshold over number of
+clusters to 5 %.
+3. HISTOGRAM GENERATION
+We also use the HSV color space for histogram generation
+where each pixel contributes either its Hue or its Intensity
+as explained in the last section. We extract the color
+histogram as the feature vector having two parts: (i) A
+representation of the Hue between 0 and 2S quantized
+after a transformation and (ii) A quantized set of gray
+values as shown in figure 4(a). The number of
+components in the feature vector generated based on Hue
+is given by:
+Nh = ª º 2ʌ MULT__FCTR  
+
+Here MULT_FCTR determines the quantization level
+for the Hues. We typically choose a value of 8. The
+number of components representing gray values is:
+Ng =  »
+»
+º «
+«
+ª
+DIV_FCTR
+Imax + 1 
+
+Here Imax is the maximum value of the Intensity,
+usually 255, and DIV_FCTR determines the number of
+quantized gray levels. We, typically, choose DIV_FCTR =
+II - 590
+16. The quantized values of Hue may be considered
+circularly arranged since Hue varies between 0 to 2S, both
+the end points being red. The feature vector is thus a
+combination of two independent vectors as shown in
+figure 4(b).
+It has been observed that, when color histograms are
+extracted from two similar images, often two neighboring
+components in the histograms have high values. This is
+due to the fact that two colors that appear close to the
+human eye may have a small difference in shade and map
+to two neighboring components in the histogram. When a
+standard measure like the Euclidean distance is used to
+order such feature vectors, the result shows a high
+distance value. To overcome this drawback, we compare
+two histograms through smoothing windows instead of
+comparing the vector components directly. All the
+conventional color histograms fail to provide the requisite
+perceptual gradation of colors in the feature vectors as
+required by such a comparison. The histogram generated
+by us retains this property in the feature vector. For the jth
+component (j  [0, Nh+Nv-1]), with a smoothing window
+size of 2N+1, the average value is calculated as follows:
+Histw [j] = ¦
+
+ 
+
+j N
+i j N
+w(i j)Hist[i]where w(i-j) = 2-|i-j| (4)
+Since we derive both the Hue and the gray level
+features using the HSV space, there are two independent
+color continuums in the histogram, one from RedÆ
+GreenÆBlueÆRed and the other from
+BlackÆGrayÆWhite. The circular nature of the Hue
+components and the discontinuity at the Hue-Intensity
+component boundary are taken care of programmatically.
+The use of the new histogram shows an improved
+performance over conventional histograms generated from
+the RGB color space. The smoothing window further
+tunes the result of retrieval.
+4. EXPERIMENTAL RESULTS
+4.1. Segmentation Results
+We have tested the algorithm on a large number of natural
+scene images. In this paper we demonstrate results that
+represent our findings from these experiments. In figures
+5(a)-(c), we show three images, their HSV-based
+segmentation results and RGB-based segmentation results.
+For RGB, we consider the higher order 2 bits to generate
+the feature vectors. In the images, we have painted the
+different regions using the color represented by the
+centroid of the clusters to give an idea about the
+differentiation capabilities of the two color spaces.
+Although exact segmentation of unconstrained color
+images is still a difficult problem, we see that the object
+boundaries can be identified in a way more similar to
+human perception of the same. The RGB features, on the
+other hand, fail to determine the color and Intensity
+variations and come up with clusters that put neighboring
+pixels with similar color but small difference in shade to
+different clusters. Often, two distinct colors are merged
+together. For the first image in figure 5, it is seen that
+RGB clustering could not detect the object boundary at all
+with the color of the man’s body merged with the color of
+the river due to high brightness. In the second image, we
+see that the sky has been identified as three regions and
+also the bush in front of the castle is interspersed with the
+color of the brick wall. In the third image, the faces of the
+people could not be identified distinctly. In some cases, a
+face was clustered along with the color of the dress of the
+subject. In the HSV-based approach, better clustering was
+achieved in all the cases with proper segmentation. The
+clustered image pixels may be further processed to merge
+small image regions into larger blocks for marking the
+exact object boundaries.
+4.2. Histogram based Image Retrieval Results
+We have developed an interface using Java applet that
+displays images similar to a query image from a database
+of about 14,500 images obtained from the web and IMSI
+master clips. Figures 6(a)-(b) show the recall and
+precision of image retrieval using a standard RGB
+histogram and the new histogram. For the new histogram,
+we show results for different widths of the smoothing
+window. From the figures, it is seen that the new
+histogram performs much better than an RGB histogram
+based system. In most cases, recall and precision values
+are higher for the same number of nearest neighbors. It is
+also observed that application of a window with small
+width improves the result set. Again, for a very large
+window width, different distinct colors tend to get added
+up and hence we do not see better results anymore. Such a
+comparison cannot be done with the RGB features due to
+the lack of color continuity in the generated histogram as
+explained in the last section. Some of the preliminary
+results in terms of actual retrieved images are available in
+[10].
+5. CONCLUSIONS
+We have studied some of the important properties of the
+HSV color space and have developed a framework for
+extracting features that can be used both for image
+segmentation and color histogram generation – two
+important approaches to content based image retrieval.
+Our approach makes use of the Saturation value of a pixel
+to determine if the Hue or the Intensity of the pixel is
+more close to human perception of color that pixel
+represents. The K-means clustering of features combines
+pixels with similar color for segmentation of the image
+into objects. We are also able to generate a histogram that
+enables us to perform a window-based smoothing of the
+vectors during retrieval of similar images. While it is well
+II - 591
+established that color itself cannot retain semantic
+information beyond a certain degree, we have shown that
+retrieval results can be considerably improved by
+choosing a better histogram.
+ 
+Figure 1. Variation of color perception with saturation
+(Decreasing from 1 to 0 left to right ) for a fixed value of
+Intensity and Hue = 0 (Red), Hue = 2S/3 (Green), Hue = 4S/3
+(Blue).
+ 2(a) 2(b) 2(c) 2(d)
+Figure 2. (a) Original Image (b) HSV Approximation (c) RGB
+approximation with all low order bits set to 0 and (d) RGB
+approximation with all low order bits set to 1.
+ 3(a) 3(b) 3(c) 3(d)
+Figure 3. (a) Original Colors (b) HSV Approximation (c) RGB
+approximation with all low order bits set to 0 and (d) RGB
+approximation with all low order bits set to 1.
+4(a)
+4(b)
+Figure 4. (a) Representation of colors in the histogram and (b)
+Circular representation of hue and linear representation of gray
+values in the histogram.
+ 5(a)
+ 5(b)
+ 5(c)
+Figure 5. (a) Original Images (b) Segmentation using HSV
+features and (c) Segmentation using RGB features.
+0
+0.2
+0.4
+0.6
+0.8
+2 5 10 20 40
+Nearest Neighbors
+Recall
+HSV0
+HSV5
+HSV10
+RGB
+6(a)
+0
+0.2
+0.4
+0.6
+0.8
+2 5 10 20 40
+Nearest Neighbors
+Precision
+HSV0 
+HSV5 
+HSV10 
+RGB 
+6(b)
+Figure 6. (a) Recall and (b) Precision variation of the new
+histogram and a standard RGB histogram.
+References
+[1] C.Carson et al, “Blobworld: A System for Region-based
+Image Indexing and Retrieval”, Proc. Third Int. Conf. on Visual
+Information Systems, June 1999.
+[2] A.Jain and A.Vailaya, “Image Retrieval using Color and
+Shape, Pattern Recognition, vol. 29, no. 8, pp. 1233-1244, 1996.
+[3] L.Kaufman and P.J.Rousseeuw, “Finding Groups in Data:
+An Introduction to Cluster Analysis”, John Wiley & Sons, 1990.
+[4] W.Y.Ma and B.Manjunath, “NeTra: A Toolbox for
+Navigating Large Image Databases”, Proc. IEEE Int. Conf. on
+Image Processing, pp. 568-571, 1997.
+[5] W.Niblack et al, “The QBIC Project: Querying Images by
+Content using Color Texture and Shape”, Proc. SPIE Int. Soc.
+Opt. Eng., in Storage and Retrieval for Image and Video
+Databases, vol. 1908, pp. 173-187, 1993.
+[6] M. Ortega et al, “Supporting Ranked Boolean Similarity
+Queries in MARS”, IEEE Trans. on Knowledge and Data
+Engineering, vol. 10, no. 6, pp. 905-925, 1998.
+[7] A.W.M. Smeulders et al, “Content Based Image Retrieval at
+the End of the Early Years”, IEEE Trans. on PAMI, vol. 22, no.
+12, pp. 1-32, December, 2000.
+[8] J.R.Smith and S.-F. Chang, “VisualSeek: A Fully Automated
+Content based Image Query System”, Proc. ACM Multimedia
+Conf., Boston, MA, 1996.
+[9] G.Stockman and L.Shapiro, “Computer Vision”, Prentice
+Hall, 2001.
+[10] S.Sural, G.Qian and S.Pramanik, “A Histogram with
+Perceptually Smooth Color Transition for Image Retrieval”,
+Proc. Fourth Int. Conf. on CVPRIP, Durham, 2002 (to appear).
+[11] M.Swain and D.Ballard, “Color Indexing”, Int. Journal of
+Computer Vision, vol.7, no. 1, pp. 11-32, 1991.
+[12] J.Z.Wang, Jia Li, Gio Wiederhold, “SIMPLIcity:
+Semantics-sensitive Integrated Matching for Picture LIbraries,”
+IEEE Trans. on PAMI, vol. 23, no. 9, pp., 2001.
+II - 592CAUCHY – Jurnal Matematika Murni dan Aplikasi
+Volume 11 (1) (2026), Pages 842-856
+p-ISSN: 2086-0382; e-ISSN: 2477-3344
+Analysis of Color Space Transformation on MobileNetV2
+Performance for Image Classification
+Sherlyn Vironica∗
+, Sugiyarto Surono, and Aris Thobirin
+Program Studi Matematika, Fakultas Sains dan Teknologi Terapan, Universitas Ahmad Dahlan,
+Yogyakarta, Indonesia
+Abstract
+This study analyzes the effect of color space transformation on the performance of MobileNetV2
+for rice leaf disease classification using RGB, HSV, CIELab, and their combinations. The
+RGB color space is used as the baseline representation, while HSV and CIELab are applied
+to provide alternative representations of color information. In addition, a dual-stream
+architecture is employed to combine different color spaces for feature extraction. The results
+show that the choice of color space influences classification performance. In the single colorspace scenario, RGB achieves the highest accuracy of 91.42%, while in the combined scenario,
+the RGB+CIELab model achieves the best performance with an accuracy of 97.00%. These
+findings suggest that the use of multiple color spaces can provide richer feature representations
+and may improve classification performance. Furthermore, the results indicate that optimizing
+input representation plays an important role in improving model performance, particularly
+when using lightweight architectures such as MobileNetV2. This study shows that color space
+transformation can improve classification performance in the rice leaf disease dataset used in
+this study.
+Keywords: CIELab; HSV; MobileNetV2; RGB; Rice Leaf Disease
+Copyright © 2026 by Authors, Published by CAUCHY Group. This is an open access article
+under the CC BY-SA License (https://creativecommons.org/licenses/by-sa/4.0)
+1. Introduction
+Deep learning is an approach in machine learning that models data through stratified layers
+of neural networks, where each layer produces increasingly abstract representations [1]. This
+approach builds hierarchical representations to capture complex patterns that are difficult to
+recognize using conventional methods [2]. Its ability to automatically extract complex visual
+structures makes deep learning widely applied in fields such as text analysis, signal processing,
+and various modern prediction systems [3–5]. Among the various deep learning architectures,
+Convolutional Neural Networks (CNNs) are among the most widely used methods for processing
+grid-structured data, particularly images due to its ability to learn spatial patterns and visual
+structures [6], and they are widely applied in image classification [7], plant disease detection
+[8], medical image analysis [9], and industrial automation [10]. However, conventional CNN
+architectures such as VGG and ResNet require substantial computational resources, making
+them less suitable for deployment on devices with limited power and memory [11, 12]. To address
+these limitations, lightweight CNN architectures such as MobileNet, ShuffleNet, and EfficientNet
+were developed to improve computational efficiency [13].
+∗Corresponding author. E-mail: 2200015016@webmail.uad.ac.id
+Submitted: February 26, 2026
+DOI: https://doi.org/10.18860/cauchy.v11i1.41353
+Reviewed: March 14, 2026 Accepted: March 30, 2026
+Color Space Transformation on MobileNetV2
+MobileNetV2 is one of the lightweight architectures that uses inverted residual block and
+linear bottleneck to extract features efficiently with far fewer parameters, while maintaining
+important information representations in low dimensions and overcoming problems [14, 15].
+The efficiency characteristic and generalization of MobileNetV2 make it not only suitable for
+implementation in real-time scenarios and data-limited devices, but also ideal for various smart
+agriculture applications [16].
+Rice is the main food source for more than half of the world’s population. Its production is
+greatly affected by the health of the plant, while leaf diseases can reduce yields if not detected early.
+The biggest challenge for farmers, especially in rural areas, is limited access to experts who can
+make accurate diagnoses. This condition has created a need for an image-based diagnostic system
+that is fast, consistent, and runs on mobile devices. The application of deep learning in plant
+disease detection is growing rapidly because disease symptoms can generally be identified through
+changes in color and texture in leaves [17, 18]. The integration of lightweight architectures, such
+as MobileNetV2, enables image-based diagnostic systems to be applied more efficiently in the
+identification of rice plant diseases, thereby increasing the speed and accuracy of decision-making
+in the field [19, 20].
+Previous studies have shown that color representation plays an important role in improving
+the accuracy of CNN-based classification models. Previous studies have shown that the use of
+color spaces such as HSV, CIELab, and YCbCr can improve the performance of CNN-based
+image classification models and machine learning [21]. Another study that specifically evaluated
+the effectiveness of color features for corn leaf disease found that the combination of HSV and
+CIELab achieved the highest accuracy of 92.48% in classification [22]. However, these results
+cannot be generalized to rice plants, which have different visual characteristics and symptom
+patterns. In addition, no study has specifically assessed the effect of color-space transformation on
+lightweight deep learning architectures, such as MobileNetV2, for rice leaf disease classification.
+Different color spaces represent visual information in different ways. The RGB color space
+directly stores red, green, and blue intensity values, which are often sensitive to illumination
+variations. In contrast, the HSV color space separates hue, saturation, and brightness information,
+allowing color characteristics of plant diseases to be represented more consistently under different
+lighting conditions. Meanwhile, the CIELab color space separates luminance and chromaticity
+components, which can highlight subtle color differences that frequently appear in diseased leaf
+tissues. These properties make HSV and CIELab potentially more effective for emphasizing
+disease characteristics compared to the standard RGB representation. Based on this, this study
+was designed in two scenarios. The first scenario uses a single color space, namely RGB, HSV, or
+CIELab. The second scenario uses a combination of two color spaces, namely RGB and HSV,
+RGB and CIELab, and HSV and CIELab. This approach aims to determine the extent to which
+differences and combinations of color representations affect the performance of MobileNetV2 in
+image classification.
+The main contribution of this study lies in systematically evaluating the impact of both single
+and combined color-space representations on the performance of a lightweight deep learning model
+for rice leaf disease classification. Unlike previous studies that focus on general plant datasets or
+heavier architectures, this study specifically investigates the role of color-space transformation in
+improving classification performance using MobileNetV2, providing insights into efficient model
+design for resource-limited agricultural applications.
+2. Methods
+Rice leaf diseases are detected and classified using the MobileNetV2 architecture through
+three types of color space transformations, namely RGB, HSV, and CIELab. Color space
+transformations are used to provide image representation variations before the classification
+process, while MobileNetV2 is used as the main model due to its ability to extract image features
+efficiently and accurately. The methodological stages applied in this study are shown in Fig. 1
+Sherlyn Vironica 843
+Color Space Transformation on MobileNetV2
+Fig. 1: Flowchart of the methodology
+The stages listed in the research method flowchart will be explained in more detail in the
+next subsection.
+2.1. Data Collection
+The data used in this study came from the rice leaf disease dataset obtained through the Kaggle
+platform. This dataset consists of 4,658 images of rice leaves, which are divided into three
+disease categories, namely Bacterial Blight with 1,584 images, Brown Spot with 1,614 images,
+and Leaf Smut with 1,460 images. Each image contains variations in lighting conditions, shooting
+angles, textures, and severity of symptoms, providing sufficient visual diversity to support a
+representative model training process. All images were originally in RGB format and grouped
+based on their respective disease classes. This dataset was used as the main source for developing
+a rice leaf disease classification model based on color space transformation and the MobileNetV2
+architecture. An example image from each category is shown in Fig. 2
+(a) Bacterial Blight (b) Brown Spot (c) Leaf Smut
+Fig. 2: Example data for each class category
+2.2. Preprocessing and Data Splitting
+In the preprocessing stage, all images were resized to 224 × 224 pixels to match the input size
+required by the MobileNetV2 architecture. Each image was normalized to the range [0, 1] to
+obtain a uniform pixel intensity scale and improve training stability [23]. Data augmentation
+was applied only to the training set to increase data diversity and reduce overfitting. The
+augmentation techniques included horizontal flip, vertical flip, shift, scale, rotation, and random
+brightness contrast. For the validation and test sets, only resizing and tensor conversion were
+applied without augmentation.
+After preprocessing, the dataset was divided into three subsets: training, validation, and
+testing data. The split was performed using a stratified sampling strategy with a ratio of 80:10:10
+to preserve the class distribution in each subset. The data partition was created once before
+the training process, and the same split was used for all experimental scenarios to ensure a fair
+comparison between different color space configurations.
+To prevent data leakage, images from the same file were not shared between the training,
+validation, and testing sets. All models were trained and evaluated using the same dataset
+partition so that performance differences only reflect the effect of color space transformation and
+model architecture. The distribution of the number of images in each subset is shown in Table 1.
+Sherlyn Vironica 844
+Color Space Transformation on MobileNetV2
+Table 1: Splitting data distribution
+Data Splitting Class Amount
+Train Bacterialblight 1267
+Brownspot 1291
+Leafsmut 1168
+Total 3726
+Validation Bacterialblight 159
+Brownspot 161
+Leafsmut 146
+Total 466
+Test Bacterialblight 158
+Brownspot 162
+Leafsmut 146
+Total 466
+2.3. Color Space Tranformation
+The color space transformation process in this study utilizes three representations of color space,
+namely RGB, HSV, and CIELab. The RGB color space is used as the original form of the
+image without additional color transformation, while HSV and CIELab are used to produce a
+more informative and stable color representation. These two color spaces were chosen because
+they are able to capture changes in the color of rice leaves more sensitively, especially changes
+due to disease symptoms. For HSV and CIELab representations, channel-wise normalization is
+applied to scale the values into a consistent range before being used as input to the model. An
+explanation of the HSV and CIELab color spaces is presented in the following subsection.
+2.3.1. HSV
+The HSV (Hue, Saturation, Value) color space represents color information using three components: hue, which indicates the type of color; saturation, which reflects the intensity of the color;
+and value, which represents brightness [24]. This representation allows color information to be
+separated from intensity, making it more robust to illumination variations.
+In this study, the transformation from RGB to HSV is performed using the standard
+implementation provided by the OpenCV library. Therefore, the conversion follows the internal
+formulation defined by the library rather than a manually specified mathematical model. This
+approach ensures consistency between the implemented method and the reported results, avoiding
+discrepancies between theoretical formulations and practical implementation
+The transformation from RGB to HSV results in different color representations for each
+component, as shown in Fig. 3.
+RGB Image Hue Saturation Value
+Fig. 3: The transformation from the RGB image to the HSV image
+Sherlyn Vironica 845
+Color Space Transformation on MobileNetV2
+2.3.2. CIELab
+The CIELab color space is a color model that is designed so that the color changes according
+to human visual perception. This color space is made up of three main components: L* which
+represents the brightness level, a* which represents the green gradation-red, and b* which depicts
+a blue-yellow gradation. Image conversion from RGB to CIELab is done through two stages:
+linear transformation to XYZ space and non-linear transformation to Lab space [25].
+The first stage begins by converting the image from RGB to XYZ space using the following
+matrix (1):
+
+
+
+X
+Y
+Z
+
+
+ =
+
+
+
+0.4124 0.3576 0.1805
+0.2126 0.7152 0.0722
+0.0193 0.1192 0.9505
+
+
+
+
+
+
+R
+G
+B
+
+
+ (1)
+Then, the values X, Y , and Z are normalized against the white reference values (Xn, Yn, Zn),
+as defined in Eq. (2):
+X′ =
+X
+Xn
+(2)
+Y
+′ =
+Y
+Yn
+(3)
+Z
+′ =
+Z
+Zn
+(4)
+The non-linear transformation to the Lab space is performed using the function defined in
+Eq. (5):
+f(t) = (
+t
+1/3
+, t > 0.008856
+7.787t +
+16
+116 , t ≤ 0.008856
+(5)
+The lightness component is computed as defined in Eq. (6):
+L
+∗ =
+(
+116f(Y
+′
+) − 16, Y ′ > 0.008856
+903.3Y
+′
+, Y ′ ≤ 0.008856
+(6)
+The chromaticity components are calculated using Eq. (7) and Eq. (8):
+a
+∗ = 500 
+f(X′
+) − f(Y
+′
+)
+
+(7)
+b
+∗ = 200 
+f(Y
+′
+) − f(Z
+′
+)
+
+(8)
+The CIELab representation is able to highlight the color differences more subtly, making
+it very effective in distinguishing between healthy rice leaves and those that have undergone
+color changes due to disease. The transformation from RGB to Lab results in different color
+representations for each component, as shown in Fig. 4.
+RGB Image L a* b*
+Fig. 4: The transformation from the RGB image to the CIELab image
+Sherlyn Vironica 846
+Color Space Transformation on MobileNetV2
+2.3.3. Classification Using MobileNetV2
+At the classification stage, this study uses the MobileNetV2 architecture as the main model
+to recognize three classes of rice leaf diseases, namely Bacterial Blight, Brown Spot, and Leaf
+Smut. This architecture was chosen because it is lightweight, efficient, and capable of producing
+representative features from image data while requiring relatively low computational resources.
+In the single color-space scenario, the model receives input images of size 224×224×3, where each
+image consists of three channels representing the selected color space (RGB, HSV, or CIELab).
+In the combined color-space scenario, two color representations are processed using a dual-stream
+architecture. Each color space is provided as a separate input to the model, and each input is
+processed by an independent MobileNetV2 backbone so that each representation can be learned
+independently while maintaining the original MobileNetV2 structure.
+The features extracted from the two MobileNetV2 backbones are then combined using feature
+fusion before entering the classification layer. The fusion is performed by concatenating the
+feature vectors obtained from each backbone, allowing the model to utilize complementary
+information from different color spaces without modifying the internal convolutional structure.
+This feature-level fusion is chosen because it provides more stable learning compared to directly
+stacking channels from different color spaces.
+The extracted features are summarized using global average pooling and passed to a fully
+connected layer with three output neurons using the softmax activation function to produce
+class predictions. The training process uses the AdamW optimizer with categorical cross-entropy
+loss to optimize the model parameters. All models in both experimental scenarios are trained
+using the same configuration with 10 epochs to ensure a fair comparison between single and
+combined color-space inputs, and all models are trained from scratch without transfer learning.
+The configuration of the layers used in the feature extraction process is shown in Table 2 as
+an example of the MobileNetV2 architecture. The same backbone structure is applied to all
+scenarios, and in the combined color-space scenario, two identical MobileNetV2 backbones are
+used in parallel before the fusion stage.
+Table 2: Example of MobileNetV2 Layer Configuration
+Layer Type Description
+Input Layer Input Image input of size 224×224×3. In the combined scenario, two inputs are processed separately using parallel MobileNetV2 backbones.
+Conv2D (Layer 1) Convolution Initial convolution layer for feature extraction
+BatchNorm2D Normalization Normalization to stabilize training
+ReLU6 Activation Non-linear activation function
+Inverted Residual
+Block×17
+Depthwise + Pointwise Conv
+Main feature extraction block of MobileNetV2
+BatchNorm2D Normalization Feature normalization
+Conv2D (1×1) Pointwise Conv Channel projection
+ReLU6 Activation Non-linear activation function
+Global Average
+Pooling
+Pooling Reduces spatial dimensions
+Dropout Regularization Prevents overfitting
+Fully Connected
+(Dense)
+Classification Output layer with 3 classes
+Softmax Activation Produces class probabilities
+2.3.4. Model Evaluation
+Model evaluation was carried out to assess the performance of MobileNetV2 in classifying rice leaf
+diseases in each color space scenario. The evaluation process includes monitoring the accuracy
+and loss curves during training to observe the model’s learning progress and detect potential
+Sherlyn Vironica 847
+Color Space Transformation on MobileNetV2
+overfitting. After the training is complete, the model’s performance is tested using unseen test
+data. The assessment is conducted using four main metrics, namely accuracy, precision, recall,
+and F1-score, which are defined in Eqs. (9), (10), (11), and (12) [26–28]:
+Accuracy =
+T P + T N
+T P + T N + F P + F N
+(9)
+Precision =
+T P
+T P + F P
+(10)
+Recall =
+T P
+T P + F N
+(11)
+F1-Score = 2 ×
+Precision × Recall
+Precision + Recall (12)
+3. Results
+This section presents the experimental results obtained from the application of the MobileNetV2
+model under different color space scenarios. The evaluation focuses on analyzing the model’s
+performance in terms of training behavior and classification effectiveness across all scenarios. The
+results are organized into several subsections to provide a clearer and more structured discussion.
+3.1. Training Performance Analysis
+Training performance is evaluated based on the progression of accuracy and loss values during
+the training process. In this study, the loss function used is categorical cross-entropy, which is
+widely applied in multi-class classification problems [29]. The categorical cross-entropy loss is
+defined in Eq. (13):
+L = −
+1
+N
+X
+N
+i=1
+X
+K
+k=1
+yi,k log (ˆyi,k) (13)
+where N denotes the total number of samples, K represents the number of classes, yi,k is the
+true label, and yˆi,k is the predicted probability for class k of the i-th sample.
+This function measures how well the model predicts the correct class in each training process.
+The training curve for each scenario is shown in Fig. 5–Fig. 10.
+Fig. 5: Model accuracy and loss curves in RGB color space
+In the RGB color space shown in Fig. 5, the validation accuracy increases steadily to close to
+0.91 at the final epoch. The same training and validation loss curves decrease without significant
+distances, indicating that the model is not overfitting. The representation of original colors helps
+the model capture the texture and patterns of the disease more consistently.
+Sherlyn Vironica 848
+Color Space Transformation on MobileNetV2
+Fig. 6: Model accuracy and loss curves in HSV color space
+Fig. 6 shows that the HSV color space has a gradually increasing accuracy curve with a
+maximum value of about 0.87. Validation loss decreases steadily, but more slowly than in the
+RGB color space. This happens because the intensity information in HSV is reduced, so it takes
+longer for the model to recognize differences between classes.
+Fig. 7: Model accuracy and loss curves in CIELab color space
+In the CIELab color space shown in Fig. 7, the validation accuracy is stable but slightly lower
+than that of RGB. The validation loss curve continues to decrease, but the difference between
+train and val is greater than that of the other two color spaces. CIELab transformation tends to
+smooth out micro-contrast that is important for the identification of disease spots, so that the
+learning process becomes less optimal.
+Furthermore, the combination of two color spaces enriches visual information through feature
+fusion obtained from two parallel feature extraction paths. Each color space is processed
+independently by a separate MobileNetV2 backbone, producing feature representations f1 and f2.
+The final feature representation is obtained by concatenating the extracted features as defined in
+Eq. (14):
+F = [ f1 ∥ f2 ] (14)
+where f1 and f2 denote the feature vectors extracted from each color space, and F represents
+the fused feature vector resulting from the concatenation operation. This approach allows the
+model to access complementary color representations simultaneously, resulting in a more diverse
+and informative feature space for the classification process.
+Sherlyn Vironica 849
+Color Space Transformation on MobileNetV2
+Fig. 8: Model accuracy and loss curves on RGB + HSV combination
+Fig. 8 shows that the combination of RGB and HSV converges rapidly, even though it is
+trained for only 10 epochs. The validation accuracy increased sharply and remained stable
+throughout. Validation loss decreases consistently, suggesting that combining native colors with
+hue stability provides richer features and accelerates learning.
+Fig. 9: Model accuracy and loss curves on RGB + CIELab combination
+Fig. 9 shows that RGB+CIELab has excellent performance with high and stable validation
+accuracy. A consistent reduction in losses indicates an effective learning process. The luminance
+component of CIELab helps highlight differences in leaf texture, while RGB retains natural color,
+providing the model with a more discriminating feature.
+Fig. 10: Model accuracy and loss curves on HSV + CIELab combination
+Sherlyn Vironica 850
+Color Space Transformation on MobileNetV2
+The combination of HSV+CIELab in Fig. 10 shows that the performance improvement is still
+noticeable but not as large as the other combinations because both color spaces reduce sensitivity
+to intensity, so the combined information is less diverse.
+3.2. Evaluation on Test Data
+Model performance evaluation is carried out using accuracy, precision, recall, and F1-Score
+metrics. The test results are shown in Table 3.
+Table 3: Model Evaluation Results on Test Data
+Model Accuracy (%) Precision (%) Recall (%) F1-Score (%)
+RGB 91.42 91.69 91.30 91.33
+HSV 87.12 87.36 87.22 87.13
+CIELab 86.05 86.03 86.03 85.97
+RGB + HSV 96.35 96.32 96.27 96.29
+RGB + CIELab 97.00 96.96 97.03 96.98
+HSV + CIELab 96.14 96.12 96.04 96.07
+Based on Table 3, models with RGB inputs perform best in single-color space scenarios. The
+HSV color space shows the lowest accuracy, while the CIELab provides medium performance. In
+the scenario of combining two color spaces, there is a consistent increase in performance. The
+combination of RGB+CIELab provides the best results with accuracy 97.00%, indicating that
+the incorporation of native color information (RGB) with luminance-chromaticity separation
+(CIELab) results in a richer representation of features for the classification process. Other
+combinations, such as RGB+HSV and HSV+CIELab, also show improved performance compared
+to the use of a single color space.
+To further analyze the classification performance, confusion matrices were generated for
+the RGB model as the best result in the single color-space scenario and the RGB+CIELab
+model as the best result in the combined color-space scenario. The confusion matrices provide a
+more detailed view of the classification results for each disease class and help identify possible
+misclassification patterns.
+Fig. 11: Confusion matrix of the RGB model on the test dataset
+Fig. 11 shows the confusion matrix for the RGB model. Most samples are correctly classified,
+especially in the Bacterial Blight class, which reaches the highest prediction accuracy. However,
+Sherlyn Vironica 851
+Color Space Transformation on MobileNetV2
+several misclassifications occur between Brown Spot and Leaf Smut. These two classes have
+similar visual characteristics, such as dark spots and color changes on the leaf surface, which
+makes them more difficult to distinguish when only the RGB color space is used. This indicates
+that the RGB representation alone is sometimes insufficient to capture subtle differences in
+disease patterns.
+Fig. 12: Confusion matrix of the RGB+CIELAb model on the test dataset
+Fig. 12 presents the confusion matrix for the RGB+CIELab model. Compared to the RGB
+model, the number of misclassifications decreases in all classes. The improvement is particularly
+noticeable in the Leaf Smut and Brown Spot classes, where the prediction accuracy becomes higher
+and more balanced. The combination of RGB and CIELab provides richer visual information,
+because RGB preserves natural color details while CIELab separates luminance and chromaticity
+components. This combination helps the model recognize subtle color variations and texture
+differences more effectively, resulting in better classification performance.
+3.3. Comparison Between Color Spaces
+All scenarios were trained for 10 epochs using the same training configuration to ensure consistent
+experimental conditions. In the single scenario, RGB performed best at 91.42%, CIELab was in
+the middle, and HSV had the lowest performance. In the combination scenario, all models showed
+improved performance under the same training configuration. The RGB+CIELab combination
+achieved the highest accuracy at 97.00%, followed by RGB+HSV and HSV+CIELab. These
+results indicate that combining two color spaces produces richer feature representations, allowing
+the model to learn more effectively. In addition, the baseline RGB-only model has limitations in
+capturing subtle color variations associated with disease symptoms. Transformations to HSV
+and CIELab provide additional information not available in RGB, and when combined, this
+information complements each other, resulting in a more stable learning process and faster
+convergence. Thus, the results suggest that color space transformation can improve classification
+performance in the experimental setting used in this study.
+4. Discussion
+This study analyzes the effect of color space transformation on the performance of MobileNetV2
+for rice leaf disease classification using RGB, HSV, CIELab, and their combinations. The
+results show that the choice of color space affects classification performance. In the single
+Sherlyn Vironica 852
+Color Space Transformation on MobileNetV2
+color-space scenario, RGB achieves the best accuracy of 91.42%, while in the combined scenario,
+the RGB+CIELab model produces the highest accuracy of 97.00%. These findings suggest
+that combining color spaces can provide richer feature information and improve classification
+performance. All scenarios were trained using the same number of epochs and identical training
+settings to maintain consistent experimental conditions. Therefore, the observed performance
+differences are likely related to the differences in input representation rather than variations in
+the training configuration.
+These findings are consistent with previous studies showing that alternative color spaces
+such as HSV and CIELab can better capture color variations related to plant disease symptoms.
+In addition, combining multiple color representations can improve classification accuracy by
+providing complementary visual features. The results of this study indicate that optimizing
+input representation through color-space transformation and feature fusion can enhance model
+performance, particularly when using lightweight architectures such as MobileNetV2.
+Compared to deeper architectures such as VGG, ResNet, and EfficientNet, lightweight models
+like MobileNetV2 are generally reported to provide a better balance between accuracy and
+computational efficiency, making them suitable for mobile-based or resource-limited applications.
+These results suggest that performance improvement may also be achieved by improving input
+representation, not only by increasing model complexity.
+It is important to note that the combined color-space scenario utilizes a dual-stream MobileNetV2 architecture, where each color space is processed by an independent backbone. This
+design increases the number of parameters and overall model capacity compared to the singlestream configuration. Therefore, the observed performance improvement may not be solely
+attributed to the use of multiple color spaces, but may also be influenced by the increased
+representational capacity of the model. This limitation should be considered when interpreting
+the results.
+This study has several limitations. The experiments were conducted using a single dataset
+and one deep learning architecture. Each scenario was trained under the same configuration,
+and repeated runs or cross-validation were not performed, which may introduce variability in the
+results due to the stochastic nature of the training process. Therefore, the reported performance
+differences should be interpreted with caution. In addition, the dataset was obtained from a
+public Kaggle source and may not fully represent real-world conditions with varying illumination,
+backgrounds, and acquisition devices. Future work may include larger and more diverse datasets,
+repeated experiments, cross-validation, and comparisons with multiple architectures to obtain
+more reliable and generalizable results.
+5. Conclusion
+This study indicates that color space transformation can influence the performance of the
+MobileNetV2 model in rice leaf disease classification. In the single color-space scenario, the
+RGB-based model achieved the highest accuracy of 91.42%, followed by CIELab and HSV. In
+the two-color space combination scenario, all models show improved performance while using
+the same training configuration, with the combination of RGB+CIELab resulting in the best
+accuracy of 97.00%. These results indicate that the incorporation of complementary color
+representations can enrich visual information and improve the performance of lightweight models
+such as MobileNetV2.
+This study has several limitations. The experiments were conducted using a single dataset and
+one deep learning architecture, and the results were obtained from a single training run without
+cross-validation. These conditions may affect the generalization of the model to different datasets
+or real-world environments. Future research can use larger datasets, repeated experiments, crossvalidation, and comparisons with other architectures to obtain more reliable and comprehensive
+results.
+Sherlyn Vironica 853
+Color Space Transformation on MobileNetV2
+CRediT Authorship Contribution Statement
+Sherlyn Vironica: Conceptualization, Methodology, Software development, Data curation,
+Formal analysis, Visualization, and Writing – Initial draft. Sugiyarto Surono: Supervision,
+Validation, Methodological Direction, and Writing – Review & Editing. Aris Thobirin:
+Supervision, Validation, and Writing – Review & Editing.
+Declaration of Generative AI and AI-assisted technologies
+In the preparation of this manuscript, the author used ChatGPT and Grammarly on a limited
+basis to help improve grammar, sentence structure, and writing clarity. The use of these tools is
+only for language editing purposes and is not involved in methodological design, experimental
+implementation, data analysis, or interpretation of research results. All scientific substance in
+this article is entirely the work of the author.
+Declaration of Competing Interest
+The author declares that there are no conflicts of interest, whether financial, personal, or
+professional, that could affect the research, analysis, or conclusions reported in this article.
+Funding and Acknowledgments
+This research did not receive special funding support from government agencies, commercial
+institutions, or non-profit organizations. The author expresses sincere gratitude to the supervisor
+for his valuable guidance, direction, and input during the implementation of the research and
+preparation of this manuscript. The author also expressed his appreciation to the Faculty of
+Applied Science and Technology and the Mathematics Laboratory of Ahmad Dahlan University
+for the support and facilities that have been provided so that this research can be carried out
+properly.
+Data and Code Availability
+The data used in this study comes from a dataset that is publicly available through the Kaggle
+platform and is publicly accessible through the original source. The code used in the model
+development, training, and evaluation process is not publicly available, but may be obtained by
+contacting the author of the correspondence upon reasonable request.
+References
+[1] Laith Alzubaidi, Jinglan Zhang, et al. “Review of deep learning: concepts, CNN architectures,
+challenges, applications, future directions”. In: Journal of Big Data 8.1 (2021). doi: 10.
+1186/s40537-021-00444-8.
+[2] N. I. Putri and Z. Munawar. “Deep Learning and Big Data Technology for IoT Security”.
+In: J. Inform. – Comput. 7.1 (2020), pp. 48–73.
+[3] F. Esmaeili et al. “Utilizing Deep Learning Algorithms for Signal Processing in Electrochemical Biosensors: From Data Augmentation to Detection and Quantification of Chemicals of Interest”. In: Bioengineering 10.12 (2023), p. 1348. doi: 10.3390/bioengineering10121348.
+[4] W. She. “A review of deep learning-based text sentiment analysis”. In: (2023). doi:
+10.54254/2755-2721/32/20230204.
+[5] X. Kong et al. “Deep learning for time series forecasting: a survey”. In: Springer (2025).
+doi: 10.1007/s13042-025-02560-w.
+Sherlyn Vironica 854
+Color Space Transformation on MobileNetV2
+[6] A. Younesi et al. “A Comprehensive Survey of Convolutions in Deep Learning : Applications
+, Challenges , and Future Trends”. In: IEEE Access (2024). doi: 10.1109/ACCESS.2024.
+3376441.
+[7] K. Azmi, S. Defit, and S. Sumijan. “Implementasi Convolutional Neural Network (CNN)
+Untuk Klasifikasi Batik Tanah Liat Sumatera Barat”. In: J. Unitek (2023). doi: 10.52072/
+unitek.v16i1.504.
+[8] S. Suhendar et al. “Deteksi Penyakit Pada Daun Tanaman Ubi Jalar Menggunakan Metode
+Convolutional Neural Network”. In: J. Ilm. Inform. Glob. (2023). doi: 10.36982/jiig.
+v14i3.3478.
+[9] Media Ali Ibrahim et al. “Deep Learning in Medical Image Analysis Article Review Media”.
+In: Indonesian Journal of Computer Science 13.2 (2024), pp. 2293–2311.
+[10] N. Hütten et al. “Deep Learning for Automated Visual Inspection in Manufacturing and
+Maintenance: A Survey of Open-Access Papers”. In: Applied System Innovation 7.1 (2024),
+p. 11. doi: 10.3390/asi7010011.
+[11] C. Luo et al. Comparison and Benchmarking of AI Models and Frameworks on Mobile
+Devices. arXiv preprint arXiv:2005.05085. 2020. http://arxiv.org/abs/2005.05085.
+[12] A. Younesi et al. “A Comprehensive Survey of Convolutions in Deep Learning: Applications,
+Challenges, and Future Trends”. In: IEEE Access 12 (2024).
+[13] T. Shahriar. Comparative Analysis of Lightweight Deep Learning Models for MemoryConstrained Devices. arXiv preprint arXiv:2505.03303. 2025. http://arxiv.org/abs/
+2505.03303.
+[14] O. V. Putra, M. Z. Mustaqim, and D. Muriatmoko. “Transfer Learning untuk Klasifikasi
+Penyakit dan Hama Padi Menggunakan MobileNetV2”. In: Techno.Com 22.3 (2023),
+pp. 562–575. doi: 10.33633/tc.v22i3.8516.
+[15] P. T. Huong et al. “Enhancing deep convolutional neural network models for orange
+quality classification using MobileNetV2 and data augmentation techniques”. In: Journal of
+Algorithms and Computational Technology 19 (2025). doi: 10.1177/17483026241309070.
+[16] S. F. D. Wardhana and A. Nugroho. “Perbandingan Arsitektur MobileNetV2 dan MobileNetV3 Dalam Klasifikasi Jenis Jeruk”. In: Journal of Computing Science and Business
+16.1 (2025), pp. 25–34. doi: 10.47927/jikb.v16i1.916.
+[17] J. Lu, L. Tan, and H. Jiang. “Review on convolutional neural network (CNN) applied to plant
+leaf disease classification”. In: Agriculture 11.8 (2021). doi: 10.3390/agriculture11080707.
+[18] Y. Toda and F. Okura. “How convolutional neural networks diagnose plant disease”. In:
+Plant Phenomics 2019 (2019). doi: 10.34133/2019/9237136.
+[19] D. Verma, D. Bordoloi, and V. Tripathi. “Plant Leaf Disease Detection Using Mobilenetv2”.
+In: Webology 18.5 (2021), pp. 3241–3246. doi: 10.29121/WEB/V18I5/60.
+[20] H. Chen et al. “Classification and identification of agricultural products based on improved
+MobileNetV2”. In: Scientific Reports 14.1 (2024). doi: 10.1038/s41598-024-53349-w.
+[21] H. M. Hassan et al. A Survey on Different Plant Diseases Detection Using Machine Learning
+Techniques. 2022.
+[22] P. F. Johari et al. “Corn Leaf Diseases Classification Using CNN with GLCM, HSV, and
+L*a*b* Features”. In: Jurnal Teknik Informatika 6.2 (2025), pp. 709–722. doi: 10.52436/
+1.jutif.2025.6.2.4345.
+[23] M. Ikhsan and M. Rahardi. “Image-Based Classification of Indonesian Traditional Houses
+Using a Hybrid CNN-SVM Algorithm”. In: Journal of Computer Science 9.5 (2025),
+pp. 2303–2309. doi: 10.30871/jaic.v9i5.10864.
+Sherlyn Vironica 855
+Color Space Transformation on MobileNetV2
+[24] D. Giuliani. “Metaheuristic Algorithms Applied to Color Image Segmentation on HSV
+Space”. In: Journal of Imaging 8.1 (2022). doi: 10.3390/jimaging8010006.
+[25] I. A. P. F. Imawati et al. “A Study of Lab Color Space and Its Visualization”. In: ICAMSAC
+2023. Atlantis Press, 2024. doi: 10.2991/978-94-6463-413-6_3.
+[26] M. B. N et al. “Plant Leaf Disease Detection using MobileNetV2”. In: (2025). doi: 10.
+1051/itmconf/20257901021.
+[27] M. S. Aryanta, C. A. Sari, and E. H. Rachmawanto. “A Banana Disease Detection Using
+MobileNetV2 Model Based on Adam Optimizer”. In: 9.4 (2025), pp. 1207–1218. doi:
+10.30871/jaic.v9i4.9870.
+[28] G. Morris et al. “Classification of Diabetic Wounds Using Transfer Learning Model:
+EfficientNetB1 and ResNet50”. In: 11.1 (2025), pp. 207–217. doi: 10 . 31154 / cogito .
+v11i1.1001.207-217.
+[29] A. R. Bushara. “Efficient net-based deep learning model for accurate plant disease classification and diagnosis”. In: 14.1 (2025), pp. 1264–1270. doi: 10.30574/ijsra.2025.14.1.
+0170.
+Sherlyn Vironica 856

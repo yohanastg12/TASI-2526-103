@@ -1,0 +1,30 @@
+{
+  "input_csv": "C:\\Users\\Reinaldy Hutapea\\Videos\\Semester 8\\Seminar Hasil\\0804\\dataset\\data.csv",
+  "output_dataset_csv": "C:\\Users\\Reinaldy Hutapea\\Videos\\Semester 8\\Seminar Hasil\\0804\\dataset\\dataset.csv",
+  "output_text_csv": "C:\\Users\\Reinaldy Hutapea\\Videos\\Semester 8\\Seminar Hasil\\0804\\dataset\\text.csv",
+  "output_image_csv": "C:\\Users\\Reinaldy Hutapea\\Videos\\Semester 8\\Seminar Hasil\\0804\\dataset\\image.csv",
+  "error_log_csv": "C:\\Users\\Reinaldy Hutapea\\Videos\\Semester 8\\Seminar Hasil\\0804\\logs\\feature_extraction_errors.csv",
+  "rows_input": 1054,
+  "rows_output": 1054,
+  "error_count": 0,
+  "text_feature_count": 12,
+  "image_feature_count": 2,
+  "validation": {
+    "input_rows": 1054,
+    "output_rows": 1054,
+    "row_count_match": true,
+    "duplicate_columns": [],
+    "missing_target_columns": [],
+    "missing_identity_columns": [],
+    "missing_expected_text_columns": [],
+    "missing_expected_image_columns": [],
+    "text_feature_count": 12,
+    "image_feature_count": 2,
+    "feature_count_total": 14,
+    "non_numeric_feature_columns": [],
+    "feature_nan_ratio": 0.0,
+    "expected_text_feature_count": 12,
+    "expected_image_feature_count": 2,
+    "is_valid_for_training": true
+  }
+}
